@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Count Page</h1>
+
+    <script>
+        const socket = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
+        socket.onopen = function(){
+            console.log('websocket connection open...')
+            socket.send('hi message sent to server')
+        }
+
+        socket.onmessage = function(){
+            console.log('Message received from server...',event)
+        }
+        socket.onerror = function(){
+            console.log('Error occured',event)
+        }
+
+        socket.onclose = function(){
+            console.log('Websocket closed...',event)
+        }
+    </script>
+</body>
+</html>

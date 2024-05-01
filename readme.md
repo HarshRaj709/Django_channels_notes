@@ -16,6 +16,8 @@
 
     gs5- Real time message sending, + difference between async and sync
 
+    gs6- Websocket handling Front End
+
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -233,6 +235,64 @@ we can write routing urls in asgi.py but that's not a good practise according to
 
 --------------------------------------------------------------------------------------------------------------------
 
-                        -------------> gs4 Message sent from server to client <----------------
+                        -------------> Handling Websocket in Front End <----------------
+
+    Handling WebSockets in the front end typically involves using JavaScript, as it's the primary language for client-side web development. Here's a basic guide on how to handle WebSockets in the front end:
+
+1. **Create a WebSocket Connection**: First, you need to establish a WebSocket connection from the client-side JavaScript code. You can do this using the `WebSocket` object provided by most modern browsers.
+
+    const socket = new WebSocket('ws://localhost:3000');        // Replace the URL with your WebSocket server URL
 
 
+2. **Handle WebSocket Events**: Once the connection is established, you'll need to handle various WebSocket events such as `onopen`, `onmessage`, `onclose`, and `onerror`.
+
+    socket.onopen = function(event) {
+        console.log('WebSocket connected',event);
+    };
+
+    // Listen for messages
+    socket.onmessage = function(event) {
+        console.log('Message from server:', event.data);
+    };
+
+    // Connection closed
+    socket.onclose = function(event) {
+        console.log('WebSocket closed:', event.code, event.reason);
+    };
+
+    // Connection error
+    socket.onerror = function(error) {
+        console.error('WebSocket error:', error);
+    };
+
+3. **Send Data to Server**: You can send data to the server using the `send()` method of the WebSocket object.
+
+    // Sending data to server
+    socket.send('Hello Server!');
+
+4. **Close the WebSocket Connection**: When you're done with the WebSocket connection, you should close it properly.
+
+    // Close the WebSocket connection
+    socket.close();
+
+5. **Handling Reconnections**: Depending on your application requirements, you might need to handle reconnections in case the WebSocket connection drops.
+
+    // Attempt to reconnect if the connection is closed
+    socket.onclose = function(event) {
+        console.log('WebSocket closed:', event.code, event.reason);
+        // Reconnect after a delay
+        setTimeout(() => {
+            socket = new WebSocket('ws://localhost:3000');
+        }, 1000);
+    };
+
+6. **Security Considerations**: Ensure that your WebSocket server supports secure connections (wss://) if your application is served over HTTPS to prevent mixed content issues and ensure data security.
+
+Remember, handling WebSockets involves both client-side and server-side code. Ensure your server is configured to handle WebSocket connections as well.
+
+
+--------------------------------------------------------------------------------------------------------------------
+
+        {isTrusted: true, data: '0', origin: 'ws://127.0.0.1:8000', lastEventId: '', source: null, …}
+
+    we can grab data from ['data']

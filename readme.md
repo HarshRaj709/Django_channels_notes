@@ -5,6 +5,12 @@
     Consumers
 
     Routing
+
+    gs1- Basic App with consumers
+
+    gs2- Sync Consumers with testing
+
+    gs3- Async Consumer with testing
 --------------------------------------------------------------------------------------------------------------------
                                
                                 ----------> Steps <-------------
@@ -61,7 +67,7 @@ step-4: Add this routing.py in asgi.py
         from channels.routing import ProtocolTypeRouter,URLRouter
         import app.routing
 
-        application = ProtocolTypeRouting(
+        application = ProtocolTypeRouter(
             {
                 'http': get_asgi_application(),
                 'websocket':URLRouter(

@@ -11,6 +11,39 @@
     gs2- Sync Consumers with testing
 
     gs3- Async Consumer with testing
+
+    gs4- How to send message from server to client
+
+    gs5- Real time message sending, + difference between async and sync
+
+
+--------------------------------------------------------------------------------------------------------------------
+
+ques.1 Why to use AsyncConsumer?
+Ans.  AsyncConsumer allows handling multiple events simultaneously without blocking, improving performance,         scalability, and responsiveness.
+
+
+Ques.2   How to send messages from server to client?
+Ans.2 We can do this by using 
+
+For SyncConsumer:
+
+    def websocket_receive(self,event):
+        print('Message received from client',event['text'])
+        self.send({
+            'type':'websocket.send',
+            'text':'Message Sent to Client',
+        })
+
+For AsyncConsumer:
+
+    async def websocket_receive(self,event):
+        print('Message received from client',event['text'])
+        await self.send({
+            'type':'websocket.send',
+            'text':'Message Sent to Client',
+        })
+
 --------------------------------------------------------------------------------------------------------------------
                                
                                 ----------> Steps <-------------
@@ -140,8 +173,6 @@ Step-1: Create Project then on your app add file name Consumer.py
 
 AsyncConsumer - just add async before function.
 
-ques. Why to use AsyncConsumer?
-Ans.  AsyncConsumer allows handling multiple events simultaneously without blocking, improving performance,         scalability, and responsiveness.
 
 Step-1: Create Project then on your app add file name Consumer.py 
 
@@ -153,7 +184,7 @@ Step-1: Create Project then on your app add file name Consumer.py
                 async def websocket_connect(self,event):      #calls when cliet initially opens a connection
                     print('Websocket connect')
 
-                async def websocket_receive(self,event):      #calls when data received fro client
+                async def websocket_receive(self,event):      #calls when data received from client
                     print('websocket Received')
 
                 async def websocket_disconnect(self,event):   #calls when connection to the client is lost
@@ -198,3 +229,10 @@ we can write routing urls in asgi.py but that's not a good practise according to
 
 
     -----------> Now we have to mention that to our asgi.py
+
+
+--------------------------------------------------------------------------------------------------------------------
+
+                        -------------> gs4 Message sent from server to client <----------------
+
+

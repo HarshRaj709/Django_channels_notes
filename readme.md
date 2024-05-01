@@ -4,14 +4,13 @@
 
     Consumers
 
-
-
-
-
+    Routing
 --------------------------------------------------------------------------------------------------------------------
+                               
+                                ----------> Steps <-------------
 
 
-Install Django Channels - pip install channnels
+Install Django Channels - python -m pip install -U 'channels[daphne]'
 
         ----------------> Steps to follow <--------------------
 
@@ -24,7 +23,8 @@ Step-1: Create Normal Django project then add channels in its settings.py-> inst
             "django.contrib.sessions",
             "django.contrib.messages",
             "django.contrib.staticfiles",
-            'channels',
+            'daphne',
+            'app',
         ]
 
                     +
@@ -34,6 +34,7 @@ Step-1: Create Normal Django project then add channels in its settings.py-> inst
 Step-2: Create Consumer.py
 
         from channels.consumer import SyncConsumer,AsyncConsumer
+        from channels.exceptions import StopConsumer
 
         class MySyncConsumer(SyncConsumer):
             def websocket_connect(self,event):
@@ -44,6 +45,7 @@ Step-2: Create Consumer.py
 
             def websocket_disconnect(self,event):
                 print('websocket disconnect')
+                raise StopConsumer()        #otherwise will generate error.
 
 step-3: Create Routing.py
 
@@ -69,7 +71,17 @@ step-4: Add this routing.py in asgi.py
         )
 
 
+step-5: Now just runserver and use the link to acess 
 
+    ws://127.0.0.1:8000/ws/sc/
+    wss://127.0.0.1:8000/ws/sc      #for secure 
+
+step-6: And when you runserver after adding this you will get
+
+April 30, 2024 - 22:58:19
+Django version 4.2.6, using settings 'gs2.settings'
+Starting ASGI/Daphne version 4.1.2 development server at http://127.0.0.1:8000/
+Quit the server with CTRL-BREAK.
 
 --------------------------------------------------------------------------------------------------------------------
 

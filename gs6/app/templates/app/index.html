@@ -11,19 +11,23 @@
     <script>
         const socket = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
         socket.onopen = function(){
-            console.log('websocket connection open...')
+            //console.log('websocket connection open...')
+            document.write('websocket connection open...')
             socket.send('hi message sent to server')
         }
 
         socket.onmessage = function(){
-            console.log('Message received from server...',event)
+            //console.log('Message received from server...',event)
+            document.write('Message received from server...',event['data'] + '<br>')
         }
         socket.onerror = function(){
-            console.log('Error occured',event)
+            //console.log('Error occured',event)
+            document.write('Error occured',event)
         }
 
         socket.onclose = function(){
             console.log('Websocket closed...',event)
+            document.write('Websocket closed...',event['reason'])
         }
     </script>
 </body>

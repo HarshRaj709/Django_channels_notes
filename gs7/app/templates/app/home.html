@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Home Page</h1>
+    <h2 id="ct"></h2>
+    <script>
+        var ws = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
+
+        ws.onopen = function(){
+            console.log('websocket connected <br>')   //agar yha pe document.write kr rhe to received data show nhi krega because document.write page ko refresh kr deta h.
+            ws.send('hello')
+        }
+
+        {% comment %} ws.onmessage = function(event){
+            //document.write(event.data + '<br>')
+            console.log(event)
+            document.getElementById('ct').innerText = event.data
+        } {% endcomment %}
+
+        ws.onmessage = function(event){
+            //document.write(event.data + '<br>')
+            console.log(event)
+            object = JSON.parse(event.data)
+            document.getElementById('ct').innerText = object.count
+        }
+
+        ws.onclose = function(){
+            console.log('websocket disconnected')
+        }
+    </script>
+</body>
+</html>

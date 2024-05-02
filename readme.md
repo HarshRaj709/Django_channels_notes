@@ -18,6 +18,8 @@
 
     gs6- Websocket handling Front End
 
+    gs7-python json lib and json in django channels.
+
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -291,8 +293,115 @@ we can write routing urls in asgi.py but that's not a good practise according to
 Remember, handling WebSockets involves both client-side and server-side code. Ensure your server is configured to handle WebSocket connections as well.
 
 
---------------------------------------------------------------------------------------------------------------------
+        -----------------------------------------------------------------------------------------------------
 
         {isTrusted: true, data: '0', origin: 'ws://127.0.0.1:8000', lastEventId: '', source: null, …}
 
-    we can grab data from ['data']
+    we can grab data from event['data']
+
+--------------------------------------------------------------------------------------------------------------------
+
+                ----------------> gs7 json to string and string to json <---------------
+
+    When sending data from a server to a client, especially in web development, JSON (JavaScript Object Notation) is commonly used for its simplicity and compatibility with many programming languages. In Python, you can create JSON data using dictionaries, lists, and other basic data types, and then serialize it into a JSON string using the `json.dumps()` function from the `json` module.
+
+Here's a basic example in Python:
+import json
+
+# Create a dictionary representing the data
+data = {
+    'name': 'John',
+    'age': 30,
+    'city': 'New York'
+}
+
+# Serialize the data to a JSON string
+json_data = json.dumps(data)
+
+# Now json_data contains the JSON representation of the data
+print(json_data)  # Output: {"name": "John", "age": 30, "city": "New York"}
+
+
+On the client-side, in JavaScript, you can then parse this JSON string into a JavaScript object using `JSON.parse()`:
+
+
+// Assuming jsonData is the JSON string received from the server
+var jsonObject = JSON.parse(jsonData);
+
+// Now you can access the data as a JavaScript object
+console.log(jsonObject.name);  // Output: John
+console.log(jsonObject.age);   // Output: 30
+console.log(jsonObject.city);  // Output: New York
+
+This enables seamless communication between a Python server and a JavaScript client, as JSON is a language-independent data interchange format.
+
+If you're sending plain text data from the server to the client, you won't need to serialize and deserialize it. You can send it directly, and the client can receive it as a string. In JavaScript, you can simply use the received string data as needed. There's no need for parsing as with JSON data.
+
+            ----------------------------------------------------------------------------------------------
+
+        Data travel between client to server in json string format.
+
+
+Server Side:
+    When sending data to client:
+        Python To String
+        json.dumps(): Converts python dictionary to json string
+    
+    When Receiving Data from client
+        String to python
+        json.loads(): Converts json string to python dictionary
+
+
+Client Side:
+    When sending data to server
+        Javascript object to string
+        json.stringify(): Converts javascript object to json string
+
+    when Receiving data from server
+        String to javascript object
+        json.parse(): Converts json string to javascript object
+
+
+--------------------------------------------------------------------------------------------------------------------
+
+                            ---------> gs7 Real Time Data with FrontEnd <----------
+
+    Converted String data to Js object to grab the values from server.
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Home Page</h1>
+    <h2 id="ct"></h2>
+    <script>
+        var ws = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
+
+        ws.onopen = function(){
+            console.log('websocket connected <br>')   //agar yha pe document.write kr rhe to received data show nhi krega because document.write page ko refresh kr deta h.
+            ws.send('hello')
+        }
+
+        {% comment %} ws.onmessage = function(event){
+            //document.write(event.data + '<br>')
+            console.log(event)
+            document.getElementById('ct').innerText = event.data
+        } {% endcomment %}
+
+        ws.onmessage = function(event){
+            //document.write(event.data + '<br>')
+            console.log(event)
+            object = JSON.parse(event.data)
+            document.getElementById('ct').innerText = object.count
+        }
+
+        ws.onclose = function(){
+            console.log('websocket disconnected')
+        }
+    </script>
+</body>
+</html>

@@ -438,108 +438,6 @@ Client Side:
 
         ------------------> gs8 Full Messages send/receive, Connect, disconnect, button <-------------
 
-
-    {% comment %} <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>Home</h1>
-    <form method = 'post'>
-        <input type="text" name="message" id="message">
-        <input type="button" value="send" onclick = 'messagesend()'>
-    </form>
-    <button type="button" onclick='reopenconnection()'>Reconnect</button>
-    <button type="button" onclick ='stopwebsocket()'>Stop</button>
-    <h1 id="count"></h1>
-    <script>
-
-        /*
-        var socket = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
-
-        socket.onopen = function (){
-            console.log('connection Established')
-            socket.send('helo')
-        }
-        socket.onmessage = function(event){
-            //document.write('message from server is ' + event['data'] + '<br>')
-            object = JSON.parse(event.data)
-            document.getElementById('count').innerText = object
-        }
-
-        socket.onclose = function(event){
-            console.log('connection ended')
-        }
-
-        function stopwebsocket(){
-            socket.close()
-        }
-
-        function messagesend(){
-            var messageinfo = document.getElementById('message');
-            var remessage = messageinfo.value;
-            socket.send(remessage);
-            message.value='';
-        }
-
-        function startserver(){
-            socket.open();
-        } */
-
-        var socket;
-        function openconnection(){
-            var socket = new WebSocket('ws://127.0.0.1:8000/ws/sc/');
-
-            socket.onopen = function (){
-                console.log('connection Established')
-                socket.send('helo')
-            }
-            socket.onmessage = function(event){
-                //document.write('message from server is ' + event['data'] + '<br>')
-                object = JSON.parse(event.data)
-                document.getElementById('count').innerText = object
-            }
-
-            socket.onclose = function(event){
-                console.log('connection ended')
-            }
-        }
-
-        function stopwebsocket(){
-            if(socket){
-                socket.close()
-            }
-            
-        }
-
-        function messagesend(){
-            var messageinfo = document.getElementById('message');
-            var remessage = messageinfo.value;
-            socket.send(remessage);
-            message.value='';
-        }
-
-        function reopenconnection(){
-            stopwebsocket();
-            openconnection();
-
-        }
-    </script>
-</body>
-</html> {% endcomment %}
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>Home</h1>
     <form method="post">
         <input type="text" name="message" id="message">
         <input type="button" value="Send" onclick="sendMessage()">
@@ -589,8 +487,6 @@ Client Side:
         // Call openWebSocket() to open the WebSocket connection initially
         openWebSocket();
     </script>
-</body>
-</html>
 
 
 

@@ -389,7 +389,7 @@ Client Side:
         {% comment %} ws.onmessage = function(event){
             //document.write(event.data + '<br>')
             console.log(event)
-            document.getElementById('ct').innerText = event.data
+            document.getElementById('ct').innerText = event.data   // Here we can also use innerHtml both will work same, difference between both is that innerHtml can interpret Html tags but innerText can't.
         } {% endcomment %}
 
         ws.onmessage = function(event){
@@ -405,3 +405,224 @@ Client Side:
     </script>
 </body>
 </html>
+
+        --------------> For this we need to convert our data to string in consumers.py <------------
+
+
+    from channels.consumer import SyncConsumer
+    from time import sleep
+    from channels.exceptions import StopConsumer
+    import json
+
+    class Myconsumer(SyncConsumer):
+        def websocket_connect(self,events):
+            print('websocket connected')
+            self.send({
+                'type':'websocket.accept',
+            })
+
+        def websocket_receive(self,event):
+            print('Message is '+ event['text'])
+            for i in range(30):
+                self.send({
+                    'type':'websocket.send',
+                    'text': json.dumps(i),
+                })
+                sleep(1)
+
+        def websocket_disconnect(self,event):
+            print('websocket connection over',event)
+            raise StopConsumer
+
+--------------------------------------------------------------------------------------------------------------------
+
+        ------------------> gs8 Full Messages send/receive, Connect, disconnect, button <-------------
+
+
+    {% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Home</h1>
+    <form method = 'post'>
+        <input type="text" name="message" id="message">
+        <input type="button" value="send" onclick = 'messagesend()'>
+    </form>
+    <button type="button" onclick='reopenconnection()'>Reconnect</button>
+    <button type="button" onclick ='stopwebsocket()'>Stop</button>
+    <h1 id="count"></h1>
+    <script>
+
+        /*
+        var socket = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
+
+        socket.onopen = function (){
+            console.log('connection Established')
+            socket.send('helo')
+        }
+        socket.onmessage = function(event){
+            //document.write('message from server is ' + event['data'] + '<br>')
+            object = JSON.parse(event.data)
+            document.getElementById('count').innerText = object
+        }
+
+        socket.onclose = function(event){
+            console.log('connection ended')
+        }
+
+        function stopwebsocket(){
+            socket.close()
+        }
+
+        function messagesend(){
+            var messageinfo = document.getElementById('message');
+            var remessage = messageinfo.value;
+            socket.send(remessage);
+            message.value='';
+        }
+
+        function startserver(){
+            socket.open();
+        } */
+
+        var socket;
+        function openconnection(){
+            var socket = new WebSocket('ws://127.0.0.1:8000/ws/sc/');
+
+            socket.onopen = function (){
+                console.log('connection Established')
+                socket.send('helo')
+            }
+            socket.onmessage = function(event){
+                //document.write('message from server is ' + event['data'] + '<br>')
+                object = JSON.parse(event.data)
+                document.getElementById('count').innerText = object
+            }
+
+            socket.onclose = function(event){
+                console.log('connection ended')
+            }
+        }
+
+        function stopwebsocket(){
+            if(socket){
+                socket.close()
+            }
+            
+        }
+
+        function messagesend(){
+            var messageinfo = document.getElementById('message');
+            var remessage = messageinfo.value;
+            socket.send(remessage);
+            message.value='';
+        }
+
+        function reopenconnection(){
+            stopwebsocket();
+            openconnection();
+
+        }
+    </script>
+</body>
+</html> {% endcomment %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Home</h1>
+    <form method="post">
+        <input type="text" name="message" id="message">
+        <input type="button" value="Send" onclick="sendMessage()">
+    </form>
+    <button type="button" onclick="reopenWebSocket()">Reconnect</button>
+    <button type="button" onclick="closeWebSocket()">Stop</button>
+    <h1 id="count"></h1>
+    <script>
+        var socket;
+
+        function openWebSocket() {
+            socket = new WebSocket('ws://127.0.0.1:8000/ws/sc/');
+
+            socket.onopen = function() {
+                console.log('Connection Established');
+                socket.send('hello');
+            };
+
+            socket.onmessage = function(event) {
+                var object = JSON.parse(event.data);
+                document.getElementById('count').innerText = object;
+            };
+
+            socket.onclose = function(event) {
+                console.log('Connection Closed');
+            };
+        }
+
+        function closeWebSocket() {
+            if (socket) {
+                socket.close();
+            }
+        }
+
+        function sendMessage() {
+            var messageInfo = document.getElementById('message');
+            var message = messageInfo.value;
+            socket.send(message);
+            messageInfo.value = '';
+        }
+
+        function reopenWebSocket() {
+            closeWebSocket(); // Close the existing WebSocket connection if it's open
+            openWebSocket(); // Open a new WebSocket connection
+        }
+
+        // Call openWebSocket() to open the WebSocket connection initially
+        openWebSocket();
+    </script>
+</body>
+</html>
+
+
+
+--------------------------------------------------------------------------------------------------------------------
+
+                        -------------------> gs9 Channel Layers <------------------
+
+
+1. **What are Channel Layers?**
+   
+   Channel layers provide a communication mechanism between different parts of your application, especially in a distributed environment. They allow different parts of your application to communicate with each other asynchronously. 
+
+2. **How do they work?**
+   
+   Channel layers work by providing a channel-based communication system. Each channel layer has a name, and you can send messages between different parts of your application by addressing them to specific channels within the layer.
+
+3. **Usage in Django Channels:**
+   
+   In Django Channels, you typically define a channel layer in your settings file. This layer can use different backends like Redis, in-memory, or others. Then, in your consumers (the parts of your application that handle WebSocket connections or other asynchronous tasks), you can send and receive messages through the channel layer.
+
+4. **Scalability:**
+   
+   Channel layers are crucial for scalability in Django Channels applications. By using a separate channel layer backend like Redis, you can distribute your application across multiple servers while still allowing communication between different parts of your application.
+
+5. **Example Use Cases:**
+   
+   - Real-time updates: You might use channel layers to send real-time updates to clients over WebSockets.
+   - Background tasks: You could use channel layers to trigger background tasks asynchronously.
+   - Coordinating between different parts of your application: For example, you could use channel layers to coordinate between different microservices in a distributed system.
+
+6. **Security Considerations:**
+   
+   When using channel layers, ensure that you're properly authenticating and authorizing messages. You don't want unauthorized users to be able to send messages to sensitive parts of your application.
+
+Overall, channel layers are a powerful tool for building real-time and asynchronous applications in Django Channels, providing a flexible and scalable way for different parts of your application to communicate with each other.

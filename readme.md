@@ -493,7 +493,7 @@ Client Side:
 --------------------------------------------------------------------------------------------------------------------
 
                         -------------------> gs9 Channel Layers <------------------
-
+Used Both Sync and Asyncconsumer
 
 1. **What are Channel Layers?**
    
@@ -522,3 +522,169 @@ Client Side:
    When using channel layers, ensure that you're properly authenticating and authorizing messages. You don't want unauthorized users to be able to send messages to sensitive parts of your application.
 
 Overall, channel layers are a powerful tool for building real-time and asynchronous applications in Django Channels, providing a flexible and scalable way for different parts of your application to communicate with each other.
+
+
+------> install redis
+            pip install channels-redis
+
+    ------> We have 2 options as Channels layers
+
+            1. Redis layer:
+                Now from official redis document copy paste below code.
+                    CHANNEL_LAYERS = {
+                        "default": {
+                            "BACKEND": "channels_redis.core.RedisChannelLayer",
+                            "CONFIG": {
+                                "hosts": [("localhost", 6379)],
+                            },
+                        },
+                    }
+
+            2. In memory layer:
+                    Only for Development.
+                        CHANNEL_LAYERS = {
+                        "default": {
+                            "BACKEND": "channels.layers.InMemoryChannelLayer"
+                        }
+                    }
+
+    I used In-memory channel in my gs9 because i got error in redis channel layer. My connection get closed automatically after 2-3 seconds.
+
+
+    --------------------> Some Built in functions to efficiently handle channel layers <-----------------------
+
+    Note that all the methods are Async in nature so to use them wwe need to wrap them in async_to_sync
+
+        from asgiref.sync import  async_to_sync
+
+    1. group_add(group_name, channel_name): 
+    This function adds a channel to a group. Groups are used to broadcast messages to multiple channels simultaneously. group_name is the name of the group, and channel_name is the name of the channel to be added to the group.
+
+    2. group_discard(group_name, channel_name): 
+    This function removes a channel from a group. Similar to group_add(), but it removes the channel instead of adding it.
+
+    3. group_send(group_name, message): 
+    This function sends a message to all channels in a group. group_name specifies the group to send the message to, and message is the content to send.
+
+    4.send(channel_name, message): 
+    Sends a message to a specific channel. channel_name is the name of the channel, and message is the content to send.
+
+    5. receive(channel_name, callback): This function sets up a callback to be called when a message is received on the specified channel. channel_name is the name of the channel, and callback is the function to call when a message is received.
+
+    6. channel_layer: This is a reference to the current channel layer. You can use it to access other built-in functions and properties of the channel layer.
+
+Complete Real time messaging----------------------------------
+
+    consumers.py ---------------->
+
+        from channels.consumer import AsyncConsumer,SyncConsumer
+        from channels.exceptions import StopConsumer
+        from asgiref.sync import async_to_sync
+        import json
+
+        class Myconsumer(SyncConsumer):
+            def websocket_connect(self,event):
+                print('websocket connected')
+                print('channel layer....',self.channel_layer)
+                print('channel name....',self.channel_name)
+                async_to_sync(self.channel_layer.group_add)('programmers',self.channel_name) #we have to convert it async_to_sync
+                self.send({
+                    'type':'websocket.accept',
+                })
+
+            def websocket_receive(self,event):
+                print('Message is '+ event['text'])
+                print(type(event['text']))              #<class 'str'>
+                async_to_sync(self.channel_layer.group_send)(
+                'programmers',
+                {
+                    'type':'chat.message',          #handler
+                    'message':event['text']
+                }
+                )
+
+            def chat_message(self,event):
+                print('Event',event)
+                print('Event',event['message'])
+                print('Event type',type(event['message']))                  #Event type <class 'str'>
+
+                self.send({
+                    'type':"websocket.send",
+                    'text':event['message'],           #added this to get acknowledgment that message send successfully.
+                })
+                # for i in range(30):
+                #     self.send({
+                #         'type':'websocket.send',
+                #         'text': json.dumps(i),
+                #     })
+                #     sleep(1)
+
+            def websocket_disconnect(self,event):
+                print('websocket connection over',event)
+                print('channel layer....',self.channel_layer)
+                print('channel name....',self.channel_name)
+                async_to_sync(self.channel_layer.group_discard)('programmers',self.channel_name)
+                raise StopConsumer
+
+
+    Home.html ------------------->
+
+                <h1>Home Page</h1>
+                    <textarea name="" id="chat_log" cols="100" rows="20"></textarea><br>
+                    <input type="text" name="" id="chat_message_input"><br>
+                    <input type="button" value="submit" id='chat_message_submit' onclick = 'client_message()'>
+                <script>
+                    var socket = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
+
+                    socket.onopen = function(){
+                        console.log('connection established')
+                        //socket.send('hi from client')
+                    }
+
+                    socket.onmessage = function(event){
+                        console.log('message received ' + typeof(event.data))       //string data type now we need to convert it to js object
+                        object1 = JSON.parse(event.data)        // converted
+                        console.log(typeof(object1))
+                        console.log(object1.msg)
+
+                        document.querySelector('#chat_log').value += (object1.msg + '\n')
+                    }
+
+                    socket.onsend = function(event){
+                        console.log('message send')
+                    }
+
+                    socket.onclose = function(){
+                        console.log('connection closed')
+                    }
+
+                    /*
+                    function client_message(){
+                        var rawmessage = document.getElementById('chat_message_input');
+                        var message = rawmessage.value;
+                        socket.send(message);                                   // without stringify my system is working...
+                    }
+                    */
+
+                    document.getElementById('chat_message_submit').onclick = function (event){
+                        const messageInputDom = document.getElementById('chat_message_input');
+                        const message = messageInputDom.value;
+                        socket.send(JSON.stringify({                // object to string
+                            'msg':message
+                        }))
+                        messageInputDom.value = '';
+                    }
+                </script>
+
+
+--------------------------------------------------------------------------------------------------------------------
+
+                        --------------> gs10 Make Group name dynamic <--------------------
+
+    How to make our group name Dynamic?
+
+we can achieve that by first giving room name to our path.
+then retrive that in our views
+then pass that to our html page.        ---------> {{groupname|json_script:'group_name'}}
+then use it create our socket link --> var Groupname = JSON.parse(document.getElementById('group_name').textContent)
+then pass that to our consumer and there we will make our group name dynamic

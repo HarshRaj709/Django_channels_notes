@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Home Page</h1>
+        <textarea name="" id="chat_log" cols="100" rows="20"></textarea><br>
+        <input type="text" name="" id="chat_message_input"><br>
+        <input type="button" value="submit" id='chat_message_submit' onclick = 'client_message()'>
+        var socket = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
+
+        socket.onopen = function(){
+            console.log('connection established')
+            //socket.send('hi from client')
+        }
+
+        socket.onmessage = function(event){
+            console.log('message received ' + typeof(event.data))       //string data type now we need to convert it to js object
+            object1 = JSON.parse(event.data)        // converted
+            console.log(typeof(object1))
+            console.log(object1.msg)
+
+            document.querySelector('#chat_log').value += (object1.msg + '\n')
+        }
+
+        socket.onsend = function(event){
+            console.log('message send')
+        }
+
+        socket.onclose = function(){
+            console.log('connection closed')
+        }
+
+        /*
+        function client_message(){
+            var rawmessage = document.getElementById('chat_message_input');
+            var message = rawmessage.value;
+            socket.send(message);                                   // without stringify my system is working...
+        }
+        */
+
+        document.getElementById('chat_message_submit').onclick = function (event){
+            const messageInputDom = document.getElementById('chat_message_input');
+            const message = messageInputDom.value;
+            socket.send(JSON.stringify({                // object to string
+                'msg':message
+            }))
+            messageInputDom.value = '';
+        }
+    </script>
+</body>
+</html>

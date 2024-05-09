@@ -681,6 +681,8 @@ Complete Real time messaging----------------------------------
 
                         --------------> gs10 Make Group name dynamic <--------------------
 
+Without Database...
+    
     How to make our group name Dynamic?
 
 we can achieve that by first giving room name to our path.
@@ -688,3 +690,26 @@ then retrive that in our views
 then pass that to our html page.        ---------> {{groupname|json_script:'group_name'}}
 then use it create our socket link --> var Groupname = JSON.parse(document.getElementById('group_name').textContent)
 then pass that to our consumer and there we will make our group name dynamic
+
+
+--------------------------------------------------------------------------------------------------------------------
+
+                            -----------------> gs11 With database <-------------------
+        
+        Simple create models according to need
+        now check group is already existed or not in your views through filter queryset.
+        if group found then save chat, else create group.
+        then pass chat to front end to show, via for loop
+
+        then make changes in consumer.py to save all chats of particular group..
+
+    All code for that is provided at gs11 
+        Both Async and Sync Consumer
+
+    In Async Consumer we must need to convert our all ORM code to sync by using Database_async_to_sync
+
+    import it from ---> channels.db import database_async_to_sync
+    use await before it wrap it like :-
+
+                    await database_sync_to_async(chat.save)()
+                    group = await database_sync_to_async(Group.objects.get)(group = self.group_name) 

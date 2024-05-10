@@ -785,3 +785,137 @@ Steps to follow----->
                         'type':'websocket.send',
                         'text': json.dumps({'msg':'login required to send message'})
                     })
+
+--------------------------------------------------------------------------------------------------------------------
+
+                    ------------------> gs13 Generic websocket consumers <-------------------
+
+    There are mainly 4 types of Generic Consumers
+
+    1. WebsocketConsumer                                                    3.JsonWebsocketConsumer
+    2. AsyncWebsocketConsumer                                               4.AsyncJsonWebsocketConsumer
+
+
+
+    In Django Channels, WebSocket consumers handle WebSocket connections and define how to respond to various WebSocket events such as receiving messages, connecting, and disconnecting. Here's a basic example of a generic WebSocket consumer in Django Channels:
+
+```python
+# consumers.py
+import json
+from channels.generic.websocket import WebsocketConsumer
+
+class MyConsumer(WebsocketConsumer):
+    def connect(self):
+        # Accept the WebSocket connection
+        self.accept()
+
+    def disconnect(self, close_code):
+        # Called when the WebSocket closes
+        pass
+
+    def receive(self, text_data):
+        # Called when a message is received from the WebSocket
+        # You can process the message here
+        pass
+```
+
+In this example:
+
+- `connect()` method is called when a WebSocket connection is established. You usually call `self.accept()` to accept the connection.
+- `disconnect()` method is called when the WebSocket connection is closed. You can perform cleanup operations here if needed.
+- `receive()` method is called when the consumer receives a message from the WebSocket connection. You can process the received message here.
+
+You can also handle JSON data by overriding `receive_json()` method instead of `receive()` method:
+
+
+class MyConsumer(WebsocketConsumer):
+    def receive_json(self, content):
+        # Called when a JSON message is received from the WebSocket
+        # Process JSON data here
+        pass
+
+
+        -----------------------------------------------------------------------------------------------------
+`In this chapter we will learn about WebsocketConsumer and AsyncWebsocket`
+
+    This wraps the verbose plain-ASGI message sending and receiving into handling that just deal with `TEXT` and    `BINARY FRAMES.`
+
+Here's a more detailed explanation of the `WebsocketConsumer` class and its methods:
+
+1. **`connect(self)`**: Instead of def websocket_connect(self): 
+
+This method is called when a WebSocket connection is established. Inside this method, you typically perform any initial setup or validation needed for the connection.
+
+After that, you call`self.accept()` to accept the WebSocket connection.
+                    `self.close()` to close the connection.
+                    `self.send()` to send the data
+
+    Instead of      self.send({
+                        'type':'websocket.accept',
+                    })
+
+2. **`disconnect(self, close_code)`**: Instead of def websocket_disconnect(self):
+
+This method is called when the WebSocket connection is closed. You can perform any cleanup tasks here if necessary. The `close_code` parameter contains the status code indicating the reason for the closure.
+
+3. **`receive(self, text_data=None, bytes_data=None)`**: Instead of def websocket_receive(self,event):
+
+This method is called when the consumer receives a message from the WebSocket connection. You can override this method to define how your application processes incoming messages. You can choose to handle either text data (`text_data`) or binary data (`bytes_data`), depending on the nature of your WebSocket communication.
+
+4. **`receive_text(self, text_data)`**: This method is a convenience method for handling incoming text data. It's an alternative to overriding the `receive()` method and handling text data there.
+
+5. **`receive_bytes(self, bytes_data)`**: Similar to `receive_text()`, this method is a convenience method for handling incoming binary data.
+
+6. **`send(self, text_data=None, bytes_data=None)`**: This method is used to send messages to the WebSocket client. You can send either text data or binary data by passing the appropriate parameters. If you're sending text data, pass it as `text_data`, and if you're sending binary data, pass it as `bytes_data`.
+
+7. **`send_text(self, text_data)`**: A convenience method for sending text data to the WebSocket client. It's equivalent to calling `self.send(text_data=text_data)`.
+
+8. **`send_bytes(self, bytes_data)`**: A convenience method for sending binary data to the WebSocket client. It's equivalent to calling `self.send(bytes_data=bytes_data)`.
+
+These are the main methods provided by the `WebsocketConsumer` class. By subclassing `WebsocketConsumer` and implementing these methods, you can define the behavior of your WebSocket-based Django application.
+
+
+Example---
+            # consumers.py
+            import json
+            from channels.generic.websocket import WebsocketConsumer
+
+            class EchoConsumer(WebsocketConsumer):
+                def connect(self):
+                    self.accept()
+
+                def disconnect(self, close_code):
+                    print('connection closed',close_code)
+
+                def receive(self, text_data=None, bytes_data=None):
+                    if text_data:
+                        self.send(text_data='Hello world')
+                    elif bytes_data:
+                        # Echo back the received binary data
+                        self.send(bytes_data=bytes_data)
+
+    ------------------------------------------------------------------------------------------------------------
+
+                            ----------------->AsyncWebsocketConsumer<-------------------
+        
+    Only handle like async function else eveything same as WebsocketConsumer
+
+        from channels.generic.websocket import AsyncWebsocketConsumer
+        class MyAsncConsumer(AsyncWebsocketConsumer):
+
+            async def connect(self):
+                print('websocket connected')
+                await self.accept()
+
+            async def receive(self,text_data=None,byte_data=None):
+                print('Message received from client...',text_data)
+                await self.send(text_data = 'hello world!')             #data sending to client
+
+            async def disconnect(self,close_code):
+                print('connection ended',close_code)
+            
+--------------------------------------------------------------------------------------------------------------------
+
+        ----------------> gs14 More about WebsocketConsumer and AsynWebscoketCosumer <--------------
+
+    

@@ -713,3 +713,75 @@ then pass that to our consumer and there we will make our group name dynamic
 
                     await database_sync_to_async(chat.save)()
                     group = await database_sync_to_async(Group.objects.get)(group = self.group_name) 
+
+
+--------------------------------------------------------------------------------------------------------------------
+
+                ------------------> gs12 Django channels Authentication <-----------------
+
+    
+    AuthMiddleware integrates Django's authentication system with Channels, allowing you to access the user's information in your consumers.
+
+    Step1.    Just add AuthMiddleware in your routing.py file
+
+                from channels.routing import ProtocolTypeRouter, URLRouter
+                from channels.auth import AuthMiddlewareStack
+                import myapp.routing
+
+                application = ProtocolTypeRouter({
+                    "websocket": AuthMiddlewareStack(
+                        URLRouter(
+                            myapp.routing.websocket_urlpatterns
+                        )
+                    ),
+                })
+
+    Step2. Add self.scope['user'] to check authentication in your Consumers.py file
+
+
+            Define WebSocket Consumers:
+Create your WebSocket consumers as usual. You can access the authenticated user via self.scope['user'] inside the consumer methods.
+
+            # consumers.py
+            from channels.generic.websocket import AsyncWebsocketConsumer
+
+            class ChatConsumer(AsyncWebsocketConsumer):
+                async def connect(self):
+                    user = self.scope['user']
+                    if user.is_authenticated:
+                        # Accept the connection
+                        await self.accept()
+                    else:
+                        # Reject the connection
+                        await self.close()
+
+                async def receive(self, text_data):
+                    ...
+
+                async def disconnect(self, close_code):
+                    ...
+
+    --------------------------------------------------------------------------------------------------------------
+
+Steps to follow----->
+
+    Step.1 : First Add Authmiddlewarestack in asgi.py file as shown above
+
+    Step.2 : Then i added Authentication check on message sending in consumers.py --->websocket.receive function
+
+                user = self.scope['user']           --- this will provide the identity of the user
+    --------condition check
+
+                if user.is_authenticated:
+
+                    group = Group.objects.filter(group = self.group_name)
+                    chat = chat(group = group,content = data['msg'])
+                    chat.save()
+
+                    ................
+                
+                else:
+                    self.send({
+                        'type':'websocket.send',
+                        'text': json.dumps({'msg':'login required to send message'})
+                    })

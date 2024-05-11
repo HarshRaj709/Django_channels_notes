@@ -4,12 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
 </head>
-<body>
-    <h1>Home Page</h1>
-        <textarea name="" id="chat_log" cols="100" rows="20"></textarea><br>
-        <input type="text" name="" id="chat_message_input"><br>
-        <input type="button" value="submit" id='chat_message_submit' onclick = 'client_message()'>
+<body class="bg-gray-100 h-screen flex flex-col justify-center items-center">
+        <div class="bg-white p-6 rounded-lg shadow-md max-w-md w-full">
+            <h1>Home Page</h1>
+            <textarea class="w-full border rounded-lg p-2 mb-4 h-40" name="" id="chat_log" cols="100" rows="20" readonly></textarea><br>
+            <input class="w-full border rounded-lg p-2 mb-4" type="text" name="" id="chat_message_input"><br>
+            <input class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded" type="button" value="submit" id='chat_message_submit' onclick = 'client_message()'>
+            
+        </div>
+        
+        
+        <script type="text/javascript">
+
+
         var socket = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
 
         socket.onopen = function(){

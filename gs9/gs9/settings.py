@@ -1,5 +1,21 @@
 from pathlib import Path
+import channels_redis 
+from urllib.parse import urlparse
+import os
+from dotenv import load_dotenv
 
+
+load_dotenv()
+
+REDISCLOUD_URL = os.getenv("REDISCLOUD_HOST")
+
+# Ensure that the URL has a valid scheme prefix (e.g., 'redis://')
+if REDISCLOUD_URL:
+    parsed_url = urlparse(REDISCLOUD_URL)
+    if not parsed_url.scheme:
+        REDISCLOUD_URL = 'redis://' + REDISCLOUD_URL
+    
+    
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -27,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -112,17 +129,21 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {
-#             "hosts": [("localhost", 6379)],
-#         },
-#     },
-# }
+
+#CHANNEL_LAYERS = {
+ #   "default": {
+  #      "BACKEND": "channels.layers.InMemoryChannelLayer"
+   # }
+#}
+
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            #"hosts": [("")],
+            "hosts":[REDISCLOUD_URL],
+             
+        },
+    },
 }

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Home Page</h1>
+    <textarea name="message showing" id="message-area" cols = '100' rows='20'></textarea><br>
+    <input type="text" name="input" id="message-input"><br>
+    <input type="button" value="send" onclick='send()'><br>
+    <input type="button" value="Close connection" onclick = 'socket_close()'> 
+    <input type="button" value="Reconnect with server" id='recon' onclick='reconnect()'>
+    <script>
+        var socket = new WebSocket('ws://127.0.0.1:8000/ws/sc/');
+
+        socket.onopen = function (){
+            console.log('connection established');
+            //socket.send('welcome server');
+        }
+
+        socket.onmessage = function(event){
+            console.log('Message received from server is : ',event['data']); //MessageEvent {isTrusted: true, data: 'hello client', origin: 'ws://127.0.0.1:8000', lastEventId: '', source: null, …}
+        }
+
+        socket.onclose = function(event){
+            console.log('connection ends');
+        }
+
+        function send(){
+            var rawdata = document.getElementById('message-input');
+            var data = rawdata.value;
+            socket.send(data)
+            document.getElementById('message-area').value += (data + '\n');
+            rawdata.value = '';
+            console.log('message send to server',data);
+        }
+
+        function socket_close(){
+            //self.close()            //this will close the window
+            socket.close();
+        }
+
+        function reconnect(){
+            socket = new WebSocket('ws://127.0.0.1:8000/ws/sc/');       // worked for me but not a good practise
+            console.log('reconnected...');
+        }
+    </script>
+
+</body>
+</html>

@@ -553,7 +553,7 @@ Overall, channel layers are a powerful tool for building real-time and asynchron
 
     --------------------> Some Built in functions to efficiently handle channel layers <-----------------------
 
-    Note that all the methods are Async in nature so to use them wwe need to wrap them in async_to_sync
+    Note that all the methods are Async in nature so to use them we need to wrap them in async_to_sync
 
         from asgiref.sync import  async_to_sync
 
@@ -918,4 +918,58 @@ Example---
 
         ----------------> gs14 More about WebsocketConsumer and AsynWebscoketCosumer <--------------
 
-    
+    Creating all previous work with websocketconsumer and asyncwebsocketconsumer
+
+    All Message sending and receiving functionality implemented , now on gs15 ill integrate django channels layers.
+    But if we open the page in second tab and send messages we cant see both users message because for that we need to use channels layer...
+
+
+--------------------------------------------------------------------------------------------------------------------
+
+        ---------------------------> gs15 Channels layers integration <---------------------
+
+FRONTEND STEPS: 
+    Step 1. Simply Create websocket request and handle all main things as previous..
+
+    Step 2. Add this to socket.onmessage
+
+                socket.onmessage = function(event){
+                console.log('Message received from server is : ',event['data']); //MessageEvent {isTrusted: true, data: 'hello client', origin: 'ws://127.0.0.1:8000', lastEventId: '', source: null, …}
+                console.log(typeof(event['data']))  //string data type it is working correctly but we have to convert to js object
+                document.getElementById('message-area').value += (event['data'] + '\n');
+                            }
+
+BACKEND STEPS:
+
+    Step 1. Add channels layers to your settings.py file
+
+    Step 2. Now we have to join all new requests with same channel who have same group name..
+            We do this in def connect(self) function before accepting the request
+
+            async def connect(self):
+                #self.channel_layer.group_add('group_name',channel_name) ///example
+                await self.channel_layer.group_add('programmer',self.channel_name)
+                await self.accept()
+
+    Step 3. Now we have to send all the messages to our channel we will do this in receive() function
+            we can do this by the use of 
+            ----------self.channel_layer.group_send('group_name',message)
+
+            async def receive(self,text_data=None,byte_data=None):
+                await self.channel_layer.group_send(
+                    'programmer',
+                    {
+                        'type':'chat.message',
+                        'text':text_data,
+                    }
+                    )
+            
+            async def chat_message(self,event):
+                await self.send(text_data=event['data'])
+
+    Step 4. After All this we need to Abort the channel for this we will use
+            `group.discard('group_name',self.channel_name)`
+
+            def disconnect(self,close_code):
+                self.channel_layer.group_discard('programmer',self.channel_name)
+

@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+channels-redis = "*"
+django = "*"
+channels = {version = "*", extras = ["daphne"]}
+python-dotenv = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
